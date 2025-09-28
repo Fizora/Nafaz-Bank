@@ -8,10 +8,16 @@
     "dev": "bun --watch run src/index.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "bcryptjs": "^3.0.2",
     "hono": "^4.7.11",
-    "shared": "workspace:*"
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.16.2",
+    "shared": "workspace:*",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }

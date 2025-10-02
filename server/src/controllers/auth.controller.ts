@@ -1,10 +1,8 @@
 import type { Context } from "hono";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwt";
+import { prisma } from "@server/utils/prisma";
 import * as Yup from "yup";
-
-const prisma = new PrismaClient();
 
 const registerSchema = Yup.object({
   username: Yup.string().required("Username wajib diisi"),
@@ -50,7 +48,7 @@ const AuthController = {
       });
 
       if (existingUser) {
-        return c.json({ pesan: "User sudah terdaftar" }, 400);
+        return c.json({ status: false, pesan: "User sudah terdaftar" }, 400);
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -67,7 +65,10 @@ const AuthController = {
         },
       });
 
-      return c.json({ pesan: "Register berhasil", data: user }, 201);
+      return c.json(
+        { status: true, pesan: "Register berhasil", data: user },
+        201
+      );
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         return c.json(
@@ -79,9 +80,12 @@ const AuthController = {
         );
       }
       if (err instanceof Error) {
-        return c.json({ pesan: err.message }, 400);
+        return c.json({ status: false, pesan: err.message }, 400);
       }
-      return c.json({ pesan: "Terjadi kesalahan tak terduga" }, 500);
+      return c.json(
+        { status: false, pesan: "Terjadi kesalahan tak terduga" },
+        500
+      );
     }
   },
 
@@ -99,30 +103,31 @@ const AuthController = {
         },
       });
 
-      if (!user) return c.json({ pesan: "User tidak ditemukan" }, 400);
+      if (!user)
+        return c.json({ status: false, pesan: "User tidak ditemukan" }, 400);
 
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) {
-        return c.json({ pesan: "Password salah" }, 400);
+        return c.json({ status: false, pesan: "Password salah" }, 400);
       }
 
       const token = generateToken({ id: user.id, role: user.role });
 
-      return c.json({ pesan: "Login berhasil", token });
+      return c.json({ status: true, pesan: "Login berhasil", token });
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         return c.json(
-          {
-            pesan: "Validasi gagal",
-            errors: err.errors,
-          },
+          { status: false, pesan: "Validasi gagal", errors: err.errors },
           400
         );
       }
       if (err instanceof Error) {
-        return c.json({ pesan: err.message }, 400);
+        return c.json({ status: false, pesan: err.message }, 400);
       }
-      return c.json({ pesan: "Terjadi kesalahan tak terduga" }, 500);
+      return c.json(
+        { status: false, pesan: "Terjadi kesalahan tak terduga" },
+        500
+      );
     }
   },
 
@@ -145,14 +150,18 @@ const AuthController = {
       },
     });
     if (!user) {
-      return c.json({ pesan: "User tidak ditemukan" }, 404);
+      return c.json({ status: false, pesan: "User tidak ditemukan" }, 404);
     }
 
-    return c.json({ pesan: "Berhasil Mendapatkan User", data: user });
+    return c.json({
+      status: true,
+      pesan: "Berhasil Mendapatkan User",
+      data: user,
+    });
   },
 
   async AuthLogout(c: Context) {
-    return c.json({ pesan: "Logout berhasil" });
+    return c.json({ status: true, pesan: "Logout berhasil" });
   },
 };
 

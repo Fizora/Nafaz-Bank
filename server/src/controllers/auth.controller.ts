@@ -111,7 +111,7 @@ const AuthController = {
         return c.json({ status: false, pesan: "Password salah" }, 400);
       }
 
-      const token = generateToken({ id: user.id, role: user.role });
+      const token = generateToken(c, { id: user.id, role: user.role });
 
       return c.json({ status: true, pesan: "Login berhasil", token });
     } catch (err) {
@@ -161,6 +161,11 @@ const AuthController = {
   },
 
   async AuthLogout(c: Context) {
+    c.header(
+      "Set-Cookie",
+      "jwt=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict; Secure"
+    );
+
     return c.json({ status: true, pesan: "Logout berhasil" });
   },
 };
